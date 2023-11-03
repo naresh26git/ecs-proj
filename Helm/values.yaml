@@ -2,7 +2,7 @@
 #namespace: devops
 replicaCount: 1
 image:
-  repository: helm
+  repository: naresh2603/helm
   tag: v1
 containerPort: 3000
 # service.yaml
