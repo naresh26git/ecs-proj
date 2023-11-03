@@ -4,11 +4,11 @@ replicaCount: 1
 image:
   repository: naresh2603/helm
   tag: v1
-containerPort: 3000
+containerPort: 80
 # service.yaml
 service:
   port: 80
-  targetPort: 3000
-  containerPort: 3000
+  targetPort: 80
+  containerPort: 80
   nodePort: 30008
   type: NodePort
