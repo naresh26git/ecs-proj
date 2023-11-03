@@ -1,0 +1,14 @@
+#deployment.yaml
+#namespace: devops
+replicaCount: 1
+image:
+  repository: helm
+  tag: v1
+containerPort: 3000
+# service.yaml
+service:
+  port: 80
+  targetPort: 3000
+  containerPort: 3000
+  nodePort: 30008
+  type: NodePort
