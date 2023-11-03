@@ -1,0 +1,7 @@
+apiVersion: v2
+name: myrocketapp  # Set the name of your Helm chart
+version: 0.1.0   # Set the version of your Helm chart
+appVersion: 1.0.0 # Set the version of your application (optional)
+description: A Helm chart for deploying nodeapplication
+type: application
+
