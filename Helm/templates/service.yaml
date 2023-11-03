@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: helm-svc
+spec:
+  type: {{ .Values.service.type }}  # Nodeport
+  selector:
+    app: devops
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.service.port }}  #80
+      targetPort: {{ .Values.service.targetPort }} #80
+      nodePort: {{ .Values.service.nodePort }}
