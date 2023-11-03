@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_IMAGE_NAME = 'myapp'
+    }
+    parameters {
+        booleanParam(name: 'SKIP_BUILD', defaultValue: true, description: 'Skip Build and Test Stage')
+        booleanParam(name: 'SKIP_DOCKER_BUILD', defaultValue: true, description: 'Skip Docker Build Stage')
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/naresh26git/awsdevopsCICD'
+            }
+        }
+
+        stage('Build and Test') {
+            when {
+                expression {
+                    return !params.SKIP_BUILD
+                }
+            }
+            steps {
+                sh 'npm install'
+                sh 'npm test'
+            }
+        }
+
+        stage('Docker Build') {
+            when {
+                expression {
+                    return !params.SKIP_DOCKER_BUILD
+                }
+            }
+            steps {
+                script {
+                    def dockerImage = docker.build(env.DOCKER_IMAGE_NAME, "--file Dockerfile .")
+                }
+            }
+        }
+
+        stage('Docker Push (Optional)') {
+            when {
+                expression {
+                    return false // Change to true if you want to push the image.
+                }
+            }
+            steps {
+                script {
+                    withCredentials([string(credentialsId: 'AccessKey', variable: 'AWS_ACCESS_KEY_ID'), string(credentialsId: 'secretkey', variable: 'AWS_SECRET_ACCESS_KEY')]) {
+                        sh "aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+                        sh "docker build -t myapps ."
+                        sh "docker tag myapps:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:latest"
+                        sh "docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME:latest"
+                    }
+                }
+            }
+        }
+    }
+}
