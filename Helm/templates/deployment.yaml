@@ -17,3 +17,5 @@ spec:
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }} #myjavapp:latest 
           ports:
             - containerPort: {{ .Values.containerPort }}
+      imagePullSecrets:
+      - name: helm
