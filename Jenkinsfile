@@ -4,7 +4,17 @@ pipeline {
         stage ('SCM checkout') {
             steps {
                 script{
-                     git credentialsId: 'git-token', url: 'https://github.com/naresh26git/helm-node.git'
+                     git credentialsId: 'git-cred', url: 'https://github.com/naresh26git/helm-node.git'
+                }
+            }
+        }
+        stage ('SonarQube Code analysis'){
+            steps {
+                script{
+                    def scannerHome = tool 'sonarscanner4';
+                    withSonarQubeEnv('sonar-pro') {
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=rocket-nodejs"
+                    }
                 }
             }
         }
@@ -18,7 +28,7 @@ pipeline {
         stage('Docker Build Images') {
             steps {
                 script {
-                    sh 'docker build -t naresh2603/helm:v1 .'
+                    sh 'docker build -t naresh2603/helm-rocket:v1 .'
                     sh 'docker images'
                 }
             }
@@ -28,7 +38,8 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
                         sh "docker login -u naresh2603 -p ${dockerPassword}"
-                        sh 'docker push naresh2603/helm:v1'
+                        sh 'docker push naresh2603/helm-rocket:v1'
+                        sh 'trivy image naresh2603/helm-rocket:v1 > scan.txt'
                     }
                 }
             }
