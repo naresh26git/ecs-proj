@@ -8,7 +8,7 @@ pipeline {
                 }
             }
         }
-        stage ('SonarQube Code analysis'){
+        stage ('SonarQube-SAST'){
             steps {
                 script{
                     def scannerHome = tool 'sonarscanner4';
@@ -28,7 +28,7 @@ pipeline {
         stage('Docker Build Images') {
             steps {
                 script {
-                    sh 'docker build -t naresh2603/helm-rocket:v1 .'
+                    sh 'docker build -t naresh2603/helm-rockets:v1 .'
                     sh 'docker images'
                 }
             }
@@ -38,9 +38,15 @@ pipeline {
                 script {
                     withCredentials([string(credentialsId: 'dockerPass', variable: 'dockerPassword')]) {
                         sh "docker login -u naresh2603 -p ${dockerPassword}"
-                        sh 'docker push naresh2603/helm-rocket:v1'
-                        sh 'trivy image naresh2603/helm-rocket:v1 > scan.txt'
+                        sh 'docker push naresh2603/helm-rockets:v1'
                     }
+                }
+            }
+        }
+        stage('Trivy Docker-scan') {
+            steps {
+                script {
+                    sh 'trivy image naresh2603/helm-rockets:v1 > scan.txt' 
                 }
             }
         }
@@ -48,7 +54,7 @@ pipeline {
             steps {
                 script {
                     withKubeCredentials(kubectlCredentials: [[ credentialsId: 'kubernetes' ]]) {
-                        sh 'kubectl create secret generic helm --from-file=.dockerconfigjson=/opt/docker/config.json  --type kubernetes.io/dockerconfigjson --dry-run=client -oyaml > secret.yaml'
+                        sh 'kubectl create secret generic helm --from-file=.dockerconfigjson=/opt/dockerconfig/config.json  --type kubernetes.io/dockerconfigjson --dry-run=client -oyaml > secret.yaml'
                         sh 'kubectl apply -f secret.yaml'
                         sh 'helm package ./Helm'
                         sh 'helm install myrocket ./myrocketapp-0.1.0.tgz'
@@ -59,5 +65,13 @@ pipeline {
                 }
             }
         }
+        stage('Dast Scanning OWASP') {
+            steps {
+                script{
+                    sh "cd ZAP_2.14.0 && ./zap.sh -port 9090 -cmd -quickurl http://18.208.212.61:30008 -quickprogress -quickout ../zap_updated_report.html"
+                }
+            }
+        }
+        
     }
 }
