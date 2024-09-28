@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: helm-rocket-app
-        image: dockerhub1010/helm-rockets:v1
+        image: dockerhub1010/helm-rockets:v1.0
         ports:
         - containerPort: 80
 ---
